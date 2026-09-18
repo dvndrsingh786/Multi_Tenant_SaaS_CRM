@@ -86,7 +86,7 @@ def dashboard(user=Depends(get_current_user), engine=Depends(get_engine)):
 def search(
     q: str = Query(min_length=2, max_length=100),
     type: Literal["lead", "contact", "customer", "deal"] | None = None,
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(25, ge=1, le=100),
     user=Depends(get_current_user),
     engine=Depends(get_engine),
@@ -153,7 +153,7 @@ def list_audit_logs(
     entity_type: str | None = Query(None, max_length=50),
     entity_id: int | None = None,
     user_id: int | None = None,
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(25, ge=1, le=100),
     user=Depends(allow_roles(ADMIN)),
     engine=Depends(get_engine),

@@ -26,7 +26,7 @@ router = APIRouter(prefix="/api/v1/customers", tags=["Customers"])
 
 @router.get("", response_model=CustomerList)
 def list_customers(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(25, ge=1, le=100),
     search: str | None = Query(None, max_length=100),
     status: CustomerStatus | None = None,

@@ -214,6 +214,7 @@ def test_bad_list_parameters_return_422(client, acme):
     headers = acme["admin"]["headers"]
     assert client.get(LEADS_URL, headers=headers, params={"per_page": 5000}).status_code == 422
     assert client.get(LEADS_URL, headers=headers, params={"page": 0}).status_code == 422
+    assert client.get(LEADS_URL, headers=headers, params={"page": 10**18}).status_code == 422
     assert client.get(LEADS_URL, headers=headers, params={"sort_by": "password_hash"}).status_code == 422
     assert client.get(LEADS_URL, headers=headers, params={"status": "WHATEVER"}).status_code == 422
 

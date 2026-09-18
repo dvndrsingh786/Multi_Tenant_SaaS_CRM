@@ -24,7 +24,7 @@ router = APIRouter(prefix="/api/v1/contacts", tags=["Contacts"])
 
 @router.get("", response_model=ContactList)
 def list_contacts(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(25, ge=1, le=100),
     search: str | None = Query(None, max_length=100),
     owner_id: int | None = None,

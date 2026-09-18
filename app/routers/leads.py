@@ -34,7 +34,7 @@ router = APIRouter(prefix="/api/v1/leads", tags=["Leads"])
 
 @router.get("", response_model=LeadList)
 def list_leads(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(25, ge=1, le=100),
     search: str | None = Query(None, max_length=100),
     status: LeadStatus | None = None,
@@ -283,7 +283,7 @@ def add_note(lead_id: int, data: NoteCreate, request: Request,
 
 @router.get("/{lead_id}/notes", response_model=NoteList)
 def list_notes(lead_id: int,
-               page: int = Query(1, ge=1),
+               page: int = Query(1, ge=1, le=10000),
                per_page: int = Query(25, ge=1, le=100),
                user=Depends(get_current_user), engine=Depends(get_engine)):
     with engine.connect() as db:

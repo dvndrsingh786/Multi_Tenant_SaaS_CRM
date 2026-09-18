@@ -46,7 +46,7 @@ def log_out_everywhere(db, user_id):
 
 @router.get("", response_model=UserList)
 def list_users(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(25, ge=1, le=100),
     search: str | None = Query(None, max_length=100),
     role: Literal["ADMIN", "MANAGER", "SALES_AGENT"] | None = None,

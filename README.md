@@ -201,6 +201,7 @@ Every list returns the same shape:
 | Code | When |
 | --- | --- |
 | 200 / 201 / 204 | OK / created / deleted (no body) |
+| 400 | the request body is not valid JSON |
 | 401 | no token, wrong token, expired token, wrong password |
 | 403 | your role is not allowed, or the plan limit is reached |
 | 404 | not found, **also for records of another company** |
@@ -303,7 +304,33 @@ the limit.
 ## Database design
 
 14 tables, all InnoDB with `utf8mb4_unicode_ci` (case-insensitive search).
-The full ERD diagram is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#database-erd).
+The ERD with every column is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#database-erd).
+The relationships:
+
+```mermaid
+erDiagram
+    companies ||--|| subscriptions : has
+    plans ||--o{ subscriptions : "used by"
+    companies ||--o{ users : employs
+    companies ||--o{ leads : owns
+    companies ||--o{ contacts : owns
+    companies ||--o{ customers : owns
+    companies ||--o{ deals : owns
+    companies ||--o{ activities : owns
+    companies ||--o{ audit_logs : owns
+    users ||--o{ leads : "assigned_to"
+    users ||--o{ contacts : "owner_id"
+    users ||--o{ customers : "assigned_to"
+    users ||--o{ deals : "assigned_to"
+    users ||--o{ activities : "user_id"
+    users ||--o{ auth_tokens : "logs in with"
+    leads ||--o| customers : "converted into"
+    leads ||--o{ notes : has
+    leads ||--o{ deals : "lead_id"
+    customers ||--o{ deals : "customer_id"
+    deals ||--o{ activities : "deal_id"
+    activities ||--o| notifications : reminder
+```
 
 | Table | Notes |
 | --- | --- |
@@ -372,6 +399,9 @@ Non-breaking changes (a new optional field, a new endpoint) are added to v1 dire
   companies on STARTER. Changing a plan would be done in the database or by a future billing feature.
 - **Only the endpoints from the brief** are included (plus `GET /company`, `PATCH /company` and
   `GET /audit-logs`, which the brief implies, and `GET /health` for Docker's health check).
+- **Files:** the brief mentions files in the tenant isolation rules, but no endpoint in the brief
+  uploads files, so there is no file storage. If added, files would be stored under a
+  `company_id` folder and every download would check the company, like every other query.
 - **Company status** cannot be changed through the API. Suspending a company would be a
   job for a platform super-admin, which is outside this assessment.
 - **Rate limits are stored in MySQL** so they work across several API processes. With

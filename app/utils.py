@@ -10,6 +10,9 @@ def paginate(db, select_sql, count_sql, params, page, per_page):
 
     select_sql: the SELECT ... WHERE ... ORDER BY ... part (without LIMIT)
     count_sql:  a SELECT COUNT(*) with the same WHERE, to know the total number of rows
+
+    The endpoints limit per_page to 100 and page to 10,000, so a huge request
+    gets a 422 instead of asking MySQL to skip billions of rows.
     """
     total = db.execute(text(count_sql), params).scalar()
 

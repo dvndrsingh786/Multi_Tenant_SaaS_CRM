@@ -35,6 +35,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -136,6 +146,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -219,6 +239,16 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
@@ -316,6 +346,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -408,6 +448,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CompanyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -516,6 +566,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -613,6 +673,7 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 10000,
               "minimum": 1,
               "default": 1,
               "title": "Page"
@@ -696,6 +757,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -804,6 +875,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -907,6 +988,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1026,6 +1117,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -1124,6 +1225,16 @@
           "204": {
             "description": "Successful Response"
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -1216,6 +1327,7 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 10000,
               "minimum": 1,
               "default": 1,
               "title": "Page"
@@ -1360,6 +1472,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -1460,6 +1582,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LeadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1567,6 +1699,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LeadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1686,6 +1828,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -1783,6 +1935,16 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
@@ -1901,6 +2063,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -2005,6 +2177,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CustomerResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2126,6 +2308,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -2225,6 +2417,7 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 10000,
               "minimum": 1,
               "default": 1,
               "title": "Page"
@@ -2250,6 +2443,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/NoteList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2346,6 +2549,7 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 10000,
               "minimum": 1,
               "default": 1,
               "title": "Page"
@@ -2458,6 +2662,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -2558,6 +2772,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CustomerResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2665,6 +2889,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CustomerResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2784,6 +3018,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -2882,6 +3126,16 @@
           "204": {
             "description": "Successful Response"
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -2974,6 +3228,7 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 10000,
               "minimum": 1,
               "default": 1,
               "title": "Page"
@@ -3062,6 +3317,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ContactList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3170,6 +3435,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -3273,6 +3548,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ContactResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3392,6 +3677,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -3490,6 +3785,16 @@
           "204": {
             "description": "Successful Response"
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -3582,6 +3887,7 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 10000,
               "minimum": 1,
               "default": 1,
               "title": "Page"
@@ -3715,6 +4021,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -3815,6 +4131,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DealResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3922,6 +4248,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DealResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4041,6 +4377,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -4138,6 +4484,16 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
@@ -4257,6 +4613,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -4349,6 +4715,7 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 10000,
               "minimum": 1,
               "default": 1,
               "title": "Page"
@@ -4493,6 +4860,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -4593,6 +4970,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ActivityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4700,6 +5087,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ActivityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4819,6 +5216,16 @@
               }
             }
           },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Not logged in, or the token is invalid/expired",
             "content": {
@@ -4906,6 +5313,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DashboardResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5041,6 +5458,7 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 10000,
               "minimum": 1,
               "default": 1,
               "title": "Page"
@@ -5066,6 +5484,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5237,6 +5665,7 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 10000,
               "minimum": 1,
               "default": 1,
               "title": "Page"
@@ -5262,6 +5691,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AuditLogList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body is not valid JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }

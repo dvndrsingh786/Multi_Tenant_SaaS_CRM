@@ -73,6 +73,12 @@ def test_register_with_bad_data_returns_422(client, test_engine, bad_fields):
         assert db.execute(text("SELECT COUNT(*) FROM companies")).scalar() == 0
 
 
+def test_broken_json_returns_400(client):
+    response = client.post(REGISTER_URL, content='{"email": "oops"', headers={"Content-Type": "application/json"})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "The request body is not valid JSON."
+
+
 def test_validation_errors_do_not_echo_the_password(client):
     data = valid_registration()
     data["password"] = "nonumbersatall"

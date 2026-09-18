@@ -32,6 +32,7 @@ class ValidationErrorResponse(BaseModel):
 
 # Added to every router in main.py, so /docs shows the possible errors for each endpoint.
 ERROR_RESPONSES = {
+    400: {"model": ErrorResponse, "description": "The request body is not valid JSON"},
     401: {"model": ErrorResponse, "description": "Not logged in, or the token is invalid/expired"},
     403: {"model": ErrorResponse, "description": "Your role is not allowed to do this, or a plan limit was reached"},
     404: {"model": ErrorResponse, "description": "Not found (also used for records of other companies)"},
@@ -47,6 +48,10 @@ def add_error_handlers(app):
     # 422: the request data is wrong. We list each bad field with a message.
     @app.exception_handler(RequestValidationError)
     def validation_error(request: Request, error: RequestValidationError):
+        # 400: the body is not even valid JSON (for example a missing quote or bracket).
+        if any(item["type"] == "json_invalid" for item in error.errors()):
+            return JSONResponse(status_code=400, content={"detail": "The request body is not valid JSON."})
+
         errors = []
         for item in error.errors():
             # item["loc"] looks like ("body", "email") or ("query", "per_page").

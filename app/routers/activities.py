@@ -26,7 +26,7 @@ router = APIRouter(prefix="/api/v1/activities", tags=["Activities"])
 
 @router.get("", response_model=ActivityList)
 def list_activities(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=10000),
     per_page: int = Query(25, ge=1, le=100),
     type: ActivityType | None = None,
     lead_id: int | None = None,
