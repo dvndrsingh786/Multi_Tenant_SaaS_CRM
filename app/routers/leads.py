@@ -5,7 +5,7 @@ Who can see which leads:
 - SALES_AGENT: only the leads assigned to them.
 
 Who can do what:
-- Everyone can create and update the leads they can see.
+- Everyone can create, update, convert and add notes to the leads they can see.
 - ADMIN and MANAGER can assign leads.
 - Only ADMIN can delete leads.
 """
@@ -13,10 +13,12 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 
 from app.audit import save_audit_log
 from app.database import get_engine
 from app.plan_limits import check_lead_limit
+from app.schemas.customers import CustomerResponse
 from app.schemas.leads import (
     AssignRequest, LeadCreate, LeadList, LeadResponse, LeadSource, LeadStatus, LeadUpdate,
     NoteCreate, NoteList, NoteResponse,
@@ -193,6 +195,85 @@ def assign_lead(lead_id: int, data: AssignRequest, request: Request,
                        new_values={"assigned_to": data.user_id})
 
     return new_lead
+
+
+# ---------- Convert to customer ----------
+
+@router.post("/{lead_id}/convert", status_code=201, response_model=CustomerResponse)
+def convert_lead(lead_id: int, request: Request,
+                 user=Depends(get_current_user), engine=Depends(get_engine)):
+    """Turn a lead into a customer.
+
+    Four things happen in ONE transaction: create the customer, mark the lead as converted,
+    add an activity, and write the audit log. If any step fails, all of them are undone.
+
+    How we stop two customers being created when two requests arrive at the same time:
+    1. SELECT ... FOR UPDATE locks the lead row. The second request has to WAIT at this
+       line until the first request's transaction is finished.
+    2. When the second request continues, it sees converted_at is already filled in,
+       so it returns 409 Conflict.
+    3. Safety net: the customers table has a UNIQUE key on (company_id, lead_id).
+       Even if the lock was somehow skipped, MySQL would refuse a second customer.
+    """
+    try:
+        with engine.begin() as db:
+            lead = find_lead(db, user, lead_id, lock=True)
+
+            if lead["converted_at"] is not None:
+                raise HTTPException(409, "This lead has already been converted to a customer.")
+
+            # Keep the useful information from the lead.
+            result = db.execute(
+                text("""
+                    INSERT INTO customers (company_id, lead_id, assigned_to, first_name, last_name,
+                                           email, phone, company_name)
+                    VALUES (:company_id, :lead_id, :assigned_to, :first_name, :last_name,
+                            :email, :phone, :company_name)
+                """),
+                {
+                    "company_id": user["company_id"],
+                    "lead_id": lead_id,
+                    "assigned_to": lead["assigned_to"] or user["id"],
+                    "first_name": lead["first_name"],
+                    "last_name": lead["last_name"],
+                    "email": lead["email"],
+                    "phone": lead["phone"],
+                    "company_name": lead["company_name"],
+                },
+            )
+            customer_id = result.lastrowid
+
+            db.execute(
+                text("""
+                    UPDATE leads SET converted_at = UTC_TIMESTAMP(), status = 'WON'
+                    WHERE id = :id AND company_id = :company_id
+                """),
+                {"id": lead_id, "company_id": user["company_id"]},
+            )
+
+            db.execute(
+                text("""
+                    INSERT INTO activities (company_id, user_id, lead_id, customer_id, type, title, completed_at)
+                    VALUES (:company_id, :user_id, :lead_id, :customer_id, 'NOTE',
+                            'Lead converted to customer', UTC_TIMESTAMP())
+                """),
+                {"company_id": user["company_id"], "user_id": user["id"],
+                 "lead_id": lead_id, "customer_id": customer_id},
+            )
+
+            save_audit_log(db, user, "CONVERT", "lead", lead_id, request,
+                           old_values={"status": lead["status"]},
+                           new_values={"status": "WON", "customer_id": customer_id})
+
+            customer = db.execute(
+                text("SELECT * FROM customers WHERE id = :id"), {"id": customer_id}
+            ).mappings().one()
+
+    except IntegrityError:
+        # The UNIQUE key (company_id, lead_id) stopped a second customer (the safety net).
+        raise HTTPException(409, "This lead has already been converted to a customer.")
+
+    return customer
 
 
 # ---------- Notes ----------
