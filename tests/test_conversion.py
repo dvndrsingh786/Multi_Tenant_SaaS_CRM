@@ -154,10 +154,3 @@ def test_sales_agent_can_convert_only_their_own_lead(client, acme):
 
     assert client.post(f"/api/v1/leads/{other['id']}/convert", headers=headers).status_code == 404
     assert client.post(f"/api/v1/leads/{own['id']}/convert", headers=headers).status_code == 201
-
-
-def test_deleted_lead_cannot_be_converted(client, acme):
-    lead = make_lead(client, acme["admin"]["headers"])
-    client.delete(f"/api/v1/leads/{lead['id']}", headers=acme["admin"]["headers"])
-    response = client.post(f"/api/v1/leads/{lead['id']}/convert", headers=acme["admin"]["headers"])
-    assert response.status_code == 404

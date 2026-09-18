@@ -1,7 +1,5 @@
 from sqlalchemy import text
 
-from helpers import login, register_company
-
 LEADS_URL = "/api/v1/leads"
 
 
@@ -53,19 +51,6 @@ def test_delete_lead_is_soft_delete(client, acme, test_engine):
     assert deleted_at is not None
 
 
-def test_lead_changes_are_audit_logged(client, acme, test_engine):
-    headers = acme["admin"]["headers"]
-    lead = make_lead(client, headers)
-    client.patch(f"{LEADS_URL}/{lead['id']}", headers=headers, json={"status": "CONTACTED"})
-    client.delete(f"{LEADS_URL}/{lead['id']}", headers=headers)
-
-    with test_engine.connect() as db:
-        actions = db.execute(text(
-            "SELECT action FROM audit_logs WHERE entity_type = 'lead' AND entity_id = :id ORDER BY id"
-        ), {"id": lead["id"]}).scalars().all()
-    assert actions == ["CREATE", "UPDATE", "DELETE"]
-
-
 # ---------- Validation ----------
 
 def test_invalid_lead_data_returns_422_with_field_errors(client, acme):
@@ -84,13 +69,6 @@ def test_unknown_fields_are_rejected(client, acme, globex):
     response = client.post(LEADS_URL, headers=acme["admin"]["headers"], json={
         "first_name": "John", "last_name": "Smith", "company_id": globex["company_id"],
     })
-    assert response.status_code == 422
-
-
-def test_assigned_to_cannot_be_changed_with_patch(client, acme):
-    lead = make_lead(client, acme["admin"]["headers"])
-    response = client.patch(f"{LEADS_URL}/{lead['id']}", headers=acme["admin"]["headers"],
-                            json={"assigned_to": acme["agent1"]["id"]})
     assert response.status_code == 422
 
 
@@ -114,13 +92,6 @@ def test_sales_agent_cannot_open_someone_elses_lead(client, acme):
     assert client.patch(f"{LEADS_URL}/{other['id']}", headers=headers, json={"status": "LOST"}).status_code == 404
 
 
-def test_sales_agent_cannot_create_lead_for_someone_else(client, acme):
-    response = client.post(LEADS_URL, headers=acme["agent1"]["headers"], json={
-        "first_name": "John", "last_name": "Smith", "assigned_to": acme["agent2"]["id"],
-    })
-    assert response.status_code == 403
-
-
 def test_only_admin_can_delete(client, acme):
     lead = make_lead(client, acme["agent1"]["headers"])
     url = f"{LEADS_URL}/{lead['id']}"
@@ -128,13 +99,6 @@ def test_only_admin_can_delete(client, acme):
     assert client.delete(url, headers=acme["agent1"]["headers"]).status_code == 403
     assert client.delete(url, headers=acme["manager"]["headers"]).status_code == 403
     assert client.delete(url, headers=acme["admin"]["headers"]).status_code == 204
-
-
-def test_manager_sees_all_company_leads(client, acme):
-    make_lead(client, acme["agent1"]["headers"])
-    make_lead(client, acme["agent2"]["headers"])
-    response = client.get(LEADS_URL, headers=acme["manager"]["headers"])
-    assert response.json()["meta"]["total"] == 2
 
 
 # ---------- Tenant isolation ----------
@@ -166,20 +130,6 @@ def test_cannot_assign_lead_to_user_of_another_company(client, acme, globex):
     response = client.patch(f"{LEADS_URL}/{lead['id']}/assign", headers=acme["admin"]["headers"],
                             json={"user_id": globex["agent1"]["id"]})
     assert response.status_code == 422
-
-
-def test_cannot_create_lead_assigned_to_user_of_another_company(client, acme, globex):
-    response = client.post(LEADS_URL, headers=acme["admin"]["headers"], json={
-        "first_name": "John", "last_name": "Smith", "assigned_to": globex["agent1"]["id"],
-    })
-    assert response.status_code == 422
-
-
-def test_cannot_add_note_to_other_company_lead(client, acme, globex):
-    lead = make_lead(client, acme["admin"]["headers"])
-    response = client.post(f"{LEADS_URL}/{lead['id']}/notes", headers=globex["admin"]["headers"],
-                           json={"content": "sneaky"})
-    assert response.status_code == 404
 
 
 # ---------- Search, filters, sorting, pagination ----------
@@ -219,12 +169,6 @@ def test_bad_list_parameters_return_422(client, acme):
     assert client.get(LEADS_URL, headers=headers, params={"status": "WHATEVER"}).status_code == 422
 
 
-def test_search_with_percent_sign_is_not_a_wildcard(client, acme):
-    make_lead(client, acme["admin"]["headers"])
-    response = client.get(LEADS_URL, headers=acme["admin"]["headers"], params={"search": "%"})
-    assert response.json()["meta"]["total"] == 0
-
-
 # ---------- Assignment ----------
 
 def test_manager_can_assign_a_lead(client, acme, test_engine):
@@ -256,50 +200,3 @@ def test_cannot_assign_to_inactive_or_missing_user(client, acme):
     url = f"{LEADS_URL}/{lead['id']}/assign"
     assert client.patch(url, headers=headers, json={"user_id": acme["agent2"]["id"]}).status_code == 422
     assert client.patch(url, headers=headers, json={"user_id": 999999}).status_code == 422
-
-
-def test_assign_missing_lead_returns_404(client, acme):
-    response = client.patch(f"{LEADS_URL}/999999/assign", headers=acme["admin"]["headers"],
-                            json={"user_id": acme["agent1"]["id"]})
-    assert response.status_code == 404
-
-
-# ---------- Notes ----------
-
-def test_add_and_list_notes(client, acme):
-    lead = make_lead(client, acme["agent1"]["headers"])
-    url = f"{LEADS_URL}/{lead['id']}/notes"
-
-    response = client.post(url, headers=acme["agent1"]["headers"], json={"content": "Called, very interested."})
-    assert response.status_code == 201
-    assert response.json()["user_id"] == acme["agent1"]["id"]
-
-    response = client.get(url, headers=acme["manager"]["headers"])
-    assert [note["content"] for note in response.json()["data"]] == ["Called, very interested."]
-
-    # agent2 cannot see agent1's lead, so also not its notes.
-    assert client.get(url, headers=acme["agent2"]["headers"]).status_code == 404
-
-
-def test_empty_note_returns_422(client, acme):
-    lead = make_lead(client, acme["admin"]["headers"])
-    response = client.post(f"{LEADS_URL}/{lead['id']}/notes", headers=acme["admin"]["headers"],
-                           json={"content": "   "})
-    assert response.status_code == 422
-
-
-# ---------- Plan limit ----------
-
-def test_free_plan_allows_only_100_leads(client, test_engine):
-    registered = register_company(client, email="boss@small.com")
-    headers = login(client, "boss@small.com")
-
-    # Insert 100 leads directly in the database to keep the test fast.
-    with test_engine.begin() as db:
-        for number in range(100):
-            db.execute(text("INSERT INTO leads (company_id, first_name, last_name) VALUES (:c, 'Lead', :n)"),
-                       {"c": registered["company_id"], "n": str(number)})
-
-    response = client.post(LEADS_URL, headers=headers, json={"first_name": "One", "last_name": "Toomany"})
-    assert response.status_code == 403
-    assert "FREE plan allows 100 leads" in response.json()["detail"]

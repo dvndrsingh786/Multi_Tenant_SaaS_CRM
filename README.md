@@ -42,7 +42,7 @@ More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (architecture, ERD, sc
 - Subscription plans (FREE / STARTER / PRO / ENTERPRISE) with user and lead limits
 - Background worker that creates reminders for activities that are due soon
 - Rate limiting on login and register
-- 130+ automated tests, seed data for two companies, Docker setup
+- Automated tests, seed data for two companies, Docker setup
 
 ## Technology choices
 
@@ -145,15 +145,12 @@ What is tested:
 
 | File | What it checks |
 | --- | --- |
-| `test_auth.py` | register, login, logout, me, 401s, validation, rate limiting |
-| `test_users.py` | roles, no ADMIN escalation, no `company_id` change, tenant isolation, user plan limit |
-| `test_company.py` | company settings, plan limits on bigger plans |
-| `test_leads.py` | lead CRUD, search, filters, sorting, pagination, assignment, notes, lead plan limit, tenant isolation |
-| `test_conversion.py` | conversion, **double and concurrent conversion**, rollback when a step fails |
-| `test_customers.py`, `test_contacts.py`, `test_deals.py`, `test_activities.py` | CRUD, permissions and tenant isolation |
-| `test_reports.py` | dashboard numbers, global search, audit logs |
-| `test_jobs.py` | reminder job (and that it never sends twice), clean-up job |
-| `test_seed.py` | seed data creates two separate companies |
+| `test_auth.py` | register, login, logout, me, 401s, validation (422 / 400), rate limiting (429) |
+| `test_users.py` | permissions, no ADMIN escalation, no `company_id` change, deactivated users logged out, tenant isolation |
+| `test_leads.py` | lead CRUD, search, filters, sorting, pagination, assignment, permissions, tenant isolation |
+| `test_conversion.py` | conversion, **duplicate and concurrent conversion**, rollback when a step fails |
+| `test_tenant_isolation.py` | another company cannot reach customers, contacts, deals, activities, search results, dashboard numbers or audit logs |
+| `test_plan_limits.py` | FREE plan user and lead limits, bigger plan allows more |
 
 ## API documentation
 
