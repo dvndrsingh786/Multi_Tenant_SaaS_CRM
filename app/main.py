@@ -3,7 +3,9 @@ import logging
 from fastapi import FastAPI
 
 from app.errors import add_error_handlers
-from app.routers import activities, auth, company, contacts, customers, deals, leads, reports, users
+from app.routers import (
+    activities, auth, company, contacts, customers, deals, leads, notifications, reports, users,
+)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -24,6 +26,7 @@ app.include_router(contacts.router)
 app.include_router(deals.router)
 app.include_router(activities.router)
 app.include_router(reports.router)
+app.include_router(notifications.router)
 
 
 @app.get("/api/v1/health", tags=["Health"])
