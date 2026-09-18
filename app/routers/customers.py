@@ -9,11 +9,12 @@ agents can "view" customers). Customers are also created by converting a lead.
 """
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
+from fastapi import APIRouter, Depends, Query, Request, Response
 from sqlalchemy import text
 
 from app.audit import save_audit_log
 from app.database import get_engine
+from app.finders import find_customer
 from app.schemas.customers import (
     CustomerCreate, CustomerList, CustomerResponse, CustomerStatus, CustomerUpdate,
 )
@@ -21,21 +22,6 @@ from app.security import ADMIN, SALES_AGENT, allow_roles, get_current_user
 from app.utils import check_user_can_be_assigned, like_pattern, paginate, update_row
 
 router = APIRouter(prefix="/api/v1/customers", tags=["Customers"])
-
-
-def find_customer(db, user, customer_id):
-    """Load one customer, only if this user is allowed to see it. Otherwise 404."""
-    sql = "SELECT * FROM customers WHERE id = :id AND company_id = :company_id AND deleted_at IS NULL"
-    params = {"id": customer_id, "company_id": user["company_id"]}
-
-    if user["role"] == SALES_AGENT:
-        sql += " AND assigned_to = :user_id"
-        params["user_id"] = user["id"]
-
-    customer = db.execute(text(sql), params).mappings().first()
-    if customer is None:
-        raise HTTPException(404, "Customer not found.")
-    return customer
 
 
 @router.get("", response_model=CustomerList)

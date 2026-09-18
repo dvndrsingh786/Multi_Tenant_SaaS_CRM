@@ -17,6 +17,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.audit import save_audit_log
 from app.database import get_engine
+from app.finders import find_lead
 from app.plan_limits import check_lead_limit
 from app.schemas.customers import CustomerResponse
 from app.schemas.leads import (
@@ -27,27 +28,6 @@ from app.security import ADMIN, MANAGER, SALES_AGENT, allow_roles, get_current_u
 from app.utils import check_user_can_be_assigned, like_pattern, paginate, update_row
 
 router = APIRouter(prefix="/api/v1/leads", tags=["Leads"])
-
-
-def find_lead(db, user, lead_id, lock=False):
-    """Load one lead, but only if this user is allowed to see it. Otherwise 404.
-
-    lock=True adds FOR UPDATE, which locks the row until the transaction ends.
-    """
-    sql = "SELECT * FROM leads WHERE id = :id AND company_id = :company_id AND deleted_at IS NULL"
-    params = {"id": lead_id, "company_id": user["company_id"]}
-
-    if user["role"] == SALES_AGENT:
-        sql += " AND assigned_to = :user_id"
-        params["user_id"] = user["id"]
-
-    if lock:
-        sql += " FOR UPDATE"
-
-    lead = db.execute(text(sql), params).mappings().first()
-    if lead is None:
-        raise HTTPException(404, "Lead not found.")
-    return lead
 
 
 # ---------- List ----------

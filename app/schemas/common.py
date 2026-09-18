@@ -1,4 +1,5 @@
 """Pieces shared by all the request and response models."""
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Annotated
 
@@ -29,6 +30,17 @@ def check_password_strength(password):
 
 # 8 to 128 characters, with at least one letter and one number.
 Password = Annotated[str, Field(min_length=8, max_length=128), AfterValidator(check_password_strength)]
+
+
+def convert_to_utc(value):
+    # "2026-09-20T10:00:00+02:00" becomes 08:00 UTC. The database stores everything in UTC.
+    # A time without a time zone is treated as UTC already.
+    if value.tzinfo is not None:
+        value = value.astimezone(timezone.utc).replace(tzinfo=None)
+    return value
+
+
+UtcDateTime = Annotated[datetime, AfterValidator(convert_to_utc)]
 
 
 class PageInfo(BaseModel):
