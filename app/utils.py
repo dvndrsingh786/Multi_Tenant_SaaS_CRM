@@ -1,6 +1,7 @@
 """Small helpers used by many routers."""
 import math
 
+from fastapi import HTTPException
 from sqlalchemy import text
 
 
@@ -52,6 +53,23 @@ def update_row(db, table, row_id, company_id, changes):
         text(f"UPDATE {table} SET {', '.join(set_parts)} WHERE id = :id AND company_id = :company_id"),
         params,
     )
+
+
+def check_user_can_be_assigned(db, company_id, user_id):
+    """Make sure user_id is an active user in the SAME company before we assign work to them."""
+    found = db.execute(
+        text("""
+            SELECT id FROM users
+            WHERE id = :id AND company_id = :company_id
+              AND status = 'ACTIVE' AND deleted_at IS NULL
+        """),
+        {"id": user_id, "company_id": company_id},
+    ).first()
+
+    if found is None:
+        # Same message whether the user is inactive or belongs to another company,
+        # so nobody can use this to discover users of other companies.
+        raise HTTPException(422, "The selected user does not exist in your company or is not active.")
 
 
 def like_pattern(search):
