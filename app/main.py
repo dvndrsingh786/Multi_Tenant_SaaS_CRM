@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 from app.errors import ERROR_RESPONSES, add_error_handlers
 from app.routers import (
-    activities, auth, company, contacts, customers, deals, leads, notifications, reports, users,
+    activities, auth, company, contacts, customers, deals, leads, reports, users,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -32,7 +32,6 @@ app.include_router(contacts.router, responses=ERROR_RESPONSES)
 app.include_router(deals.router, responses=ERROR_RESPONSES)
 app.include_router(activities.router, responses=ERROR_RESPONSES)
 app.include_router(reports.router, responses=ERROR_RESPONSES)
-app.include_router(notifications.router, responses=ERROR_RESPONSES)
 
 
 @app.get("/api/v1/health", tags=["Health"])

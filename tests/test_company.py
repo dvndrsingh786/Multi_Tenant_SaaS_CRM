@@ -1,4 +1,4 @@
-from helpers import create_user, login, register_company
+from helpers import create_user, login, register_company, set_plan
 
 
 def test_every_user_sees_their_own_company(client, acme, globex):
@@ -32,37 +32,21 @@ def test_company_name_cannot_be_set_to_null(client, acme):
     assert response.status_code == 422
 
 
-def test_subscription_shows_plan_and_usage(client, acme):
-    response = client.get("/api/v1/subscription", headers=acme["admin"]["headers"])
-    assert response.status_code == 200
-    body = response.json()
-    assert body["plan"]["name"] == "STARTER"
-    assert body["users_used"] == 4
-
-
-def test_cannot_downgrade_below_current_usage(client, acme):
-    # Acme has 4 users, FREE allows 3.
-    response = client.patch("/api/v1/subscription", headers=acme["admin"]["headers"], json={"plan": "FREE"})
-    assert response.status_code == 409
-
-
-def test_only_admin_can_change_plan(client, acme):
-    response = client.patch("/api/v1/subscription", headers=acme["manager"]["headers"], json={"plan": "PRO"})
-    assert response.status_code == 403
-
-
-def test_upgrade_raises_the_user_limit(client):
-    register_company(client, email="boss@small.com")
+def test_bigger_plan_allows_more_users(client, test_engine):
+    registered = register_company(client, email="boss@small.com")
     headers = login(client, "boss@small.com")
     create_user(client, headers, "one@small.com", "SALES_AGENT")
     create_user(client, headers, "two@small.com", "SALES_AGENT")
 
-    client.patch("/api/v1/subscription", headers=headers, json={"plan": "PRO"})
+    set_plan(test_engine, registered["company_id"], "PRO")
 
     create_user(client, headers, "three@small.com", "SALES_AGENT")  # would fail on FREE
 
 
-def test_plans_list(client, acme):
-    response = client.get("/api/v1/plans", headers=acme["agent1"]["headers"])
-    names = [plan["name"] for plan in response.json()]
-    assert names == ["FREE", "STARTER", "PRO", "ENTERPRISE"]
+def test_enterprise_plan_has_no_user_limit(client, test_engine):
+    registered = register_company(client, email="boss@big.com")
+    headers = login(client, "boss@big.com")
+    set_plan(test_engine, registered["company_id"], "ENTERPRISE")
+
+    for number in range(12):  # more than STARTER (10) allows
+        create_user(client, headers, f"user{number}@big.com", "SALES_AGENT")

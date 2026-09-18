@@ -147,7 +147,7 @@ What is tested:
 | --- | --- |
 | `test_auth.py` | register, login, logout, me, 401s, validation, rate limiting |
 | `test_users.py` | roles, no ADMIN escalation, no `company_id` change, tenant isolation, user plan limit |
-| `test_company.py` | company settings, plan changes, no downgrade below current usage |
+| `test_company.py` | company settings, plan limits on bigger plans |
 | `test_leads.py` | lead CRUD, search, filters, sorting, pagination, assignment, notes, lead plan limit, tenant isolation |
 | `test_conversion.py` | conversion, **double and concurrent conversion**, rollback when a step fails |
 | `test_customers.py`, `test_contacts.py`, `test_deals.py`, `test_activities.py` | CRUD, permissions and tenant isolation |
@@ -169,7 +169,7 @@ To use protected endpoints: call `POST /api/v1/auth/login`, copy `access_token`,
 | Area | Endpoints |
 | --- | --- |
 | Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me` |
-| Company | `GET/PATCH /company`, `GET /plans`, `GET/PATCH /subscription` |
+| Company | `GET/PATCH /company` |
 | Users | `GET/POST /users`, `GET/PATCH/DELETE /users/{id}` |
 | Leads | `GET/POST /leads`, `GET/PATCH/DELETE /leads/{id}`, `PATCH /leads/{id}/assign`, `POST /leads/{id}/convert`, `GET/POST /leads/{id}/notes` |
 | Contacts | `GET/POST /contacts`, `GET/PATCH/DELETE /contacts/{id}` |
@@ -177,7 +177,6 @@ To use protected endpoints: call `POST /api/v1/auth/login`, copy `access_token`,
 | Deals | `GET/POST /deals`, `GET/PATCH/DELETE /deals/{id}`, `PATCH /deals/{id}/stage` |
 | Activities | `GET/POST /activities`, `GET/PATCH /activities/{id}` |
 | Reports | `GET /dashboard`, `GET /search?q=`, `GET /audit-logs` |
-| Notifications | `GET /notifications`, `PATCH /notifications/{id}/read` |
 
 (All paths start with `/api/v1`.)
 
@@ -205,7 +204,7 @@ Every list returns the same shape:
 | 401 | no token, wrong token, expired token, wrong password |
 | 403 | your role is not allowed, or the plan limit is reached |
 | 404 | not found, **also for records of another company** |
-| 409 | duplicate email, lead already converted, plan downgrade not possible |
+| 409 | duplicate email, lead already converted |
 | 422 | invalid input. One message per field, for example `{"detail": "Validation failed.", "errors": [{"field": "email", "message": "..."}]}` |
 | 429 | too many login/register attempts (`Retry-After: 60`) |
 | 500 | unexpected error. Only `"Internal server error."` is sent back, the details go to the server log |
@@ -216,7 +215,7 @@ Every list returns the same shape:
 | --- | --- | --- | --- |
 | Manage users (create, change role, delete) | ✅ | ❌ | ❌ |
 | View user list | ✅ | ✅ | only themselves |
-| Update company, change plan | ✅ | ❌ | ❌ |
+| Update company settings | ✅ | ❌ | ❌ |
 | View / create / update leads | all | all | only assigned to them |
 | Delete leads | ✅ | ❌ | ❌ |
 | Assign leads | ✅ | ✅ | ❌ |
@@ -251,8 +250,8 @@ The company is **never** taken from the request. It always comes from the login 
    `leads(company_id, assigned_to)` points to `users(company_id, id)`. So MySQL itself
    refuses to assign an Acme lead to a Globex user, even if the code had a bug.
 
-This covers API requests, single records, lists, search, dashboard numbers, notes,
-notifications and audit logs.
+This covers API requests, single records, lists, search, dashboard numbers, notes
+and audit logs. The reminder job also saves each reminder with the activity's `company_id`.
 
 ## Lead conversion and concurrency
 
@@ -316,7 +315,7 @@ The full ERD diagram is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#database-
 | `audit_logs` | old/new values stored as JSON |
 | `auth_tokens` | SHA-256 hashes of login tokens |
 | `rate_limits` | request counters for rate limiting |
-| `notifications` | reminders written by the background worker |
+| `notifications` | reminders written by the background worker (stored only, as the brief allows) |
 
 Main rules:
 - **Every tenant table has `company_id`**, and every index starts with `company_id`
@@ -368,7 +367,11 @@ Non-breaking changes (a new optional field, a new endpoint) are added to v1 dire
 - **Activities** always belong to the user who created them. No DELETE (not in the brief).
 - **Converted leads** get status `WON` and a `converted_at` time.
 - **Plan limits** count users and leads that are not deleted. Reaching a limit returns 403.
-  A downgrade below the current usage returns 409. There is no payment provider (allowed by the brief).
+  New companies start on FREE. There is no payment provider and no endpoint to change plans
+  (the brief only asks for the plan structures and the limits); the demo data puts both
+  companies on STARTER. Changing a plan would be done in the database or by a future billing feature.
+- **Only the endpoints from the brief** are included (plus `GET /company`, `PATCH /company` and
+  `GET /audit-logs`, which the brief implies, and `GET /health` for Docker's health check).
 - **Company status** cannot be changed through the API. Suspending a company would be a
   job for a platform super-admin, which is outside this assessment.
 - **Rate limits are stored in MySQL** so they work across several API processes. With

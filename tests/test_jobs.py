@@ -28,10 +28,13 @@ def test_reminders_only_for_unfinished_activities_due_soon(client, acme, test_en
 
     assert send_activity_reminders(test_engine) == 1
 
-    response = client.get("/api/v1/notifications", headers=headers)
-    messages = [notification["message"] for notification in response.json()["data"]]
-    assert len(messages) == 1
-    assert "Due soon" in messages[0]
+    with test_engine.connect() as db:
+        notifications = db.execute(text("SELECT user_id, company_id, message FROM notifications")).mappings().all()
+    assert len(notifications) == 1
+    assert "Due soon" in notifications[0]["message"]
+    # The reminder goes to the activity's owner, inside the owner's company.
+    assert notifications[0]["user_id"] == acme["agent1"]["id"]
+    assert notifications[0]["company_id"] == acme["company_id"]
 
 
 def test_running_the_job_twice_does_not_send_twice(client, acme, test_engine):
@@ -42,19 +45,6 @@ def test_running_the_job_twice_does_not_send_twice(client, acme, test_engine):
 
     with test_engine.connect() as db:
         assert db.execute(text("SELECT COUNT(*) FROM notifications")).scalar() == 1
-
-
-def test_users_only_see_their_own_notifications(client, acme, globex, test_engine):
-    add_activity(client, acme["agent1"]["headers"], "Agent one task", due_at=in_minutes(10))
-    send_activity_reminders(test_engine)
-
-    assert client.get("/api/v1/notifications", headers=acme["agent2"]["headers"]).json()["data"] == []
-    assert client.get("/api/v1/notifications", headers=globex["admin"]["headers"]).json()["data"] == []
-
-    notification = client.get("/api/v1/notifications", headers=acme["agent1"]["headers"]).json()["data"][0]
-    url = f"/api/v1/notifications/{notification['id']}/read"
-    assert client.patch(url, headers=acme["agent2"]["headers"]).status_code == 404
-    assert client.patch(url, headers=acme["agent1"]["headers"]).json()["is_read"] is True
 
 
 def test_clean_up_removes_expired_tokens(client, acme, test_engine):

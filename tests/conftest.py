@@ -62,10 +62,10 @@ def client(test_engine):
 
 # Two separate companies. Many tests use "globex" to try to reach "acme" data.
 @pytest.fixture
-def acme(client):
-    return create_company_with_team(client, "Acme Ltd", "acme.com")
+def acme(client, test_engine):
+    return create_company_with_team(client, test_engine, "Acme Ltd", "acme.com")
 
 
 @pytest.fixture
-def globex(client):
-    return create_company_with_team(client, "Globex Corp", "globex.com")
+def globex(client, test_engine):
+    return create_company_with_team(client, test_engine, "Globex Corp", "globex.com")

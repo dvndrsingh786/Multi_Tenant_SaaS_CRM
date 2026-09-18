@@ -1,4 +1,5 @@
 """Small functions that many tests use."""
+from sqlalchemy import text
 
 PASSWORD = "Password123!"
 
@@ -32,7 +33,16 @@ def create_user(client, admin_headers, email, role, name="Test User"):
     return response.json()
 
 
-def create_company_with_team(client, company_name, domain):
+def set_plan(engine, company_id, plan_name):
+    """Change a company's plan directly in the database (there is no API endpoint for it)."""
+    with engine.begin() as db:
+        db.execute(text("""
+            UPDATE subscriptions SET plan_id = (SELECT id FROM plans WHERE name = :plan)
+            WHERE company_id = :company_id
+        """), {"plan": plan_name, "company_id": company_id})
+
+
+def create_company_with_team(client, engine, company_name, domain):
     """Make a company with an admin, a manager and two sales agents, all logged in.
 
     Returns a dict like:
@@ -45,8 +55,7 @@ def create_company_with_team(client, company_name, domain):
     admin_headers = login(client, f"admin@{domain}")
 
     # The FREE plan only allows 3 users and we need 4, so move to STARTER.
-    response = client.patch("/api/v1/subscription", headers=admin_headers, json={"plan": "STARTER"})
-    assert response.status_code == 200, response.text
+    set_plan(engine, registered["company_id"], "STARTER")
 
     team = {
         "company_id": registered["company_id"],

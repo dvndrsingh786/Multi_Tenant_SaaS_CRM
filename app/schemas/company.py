@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Literal
 
 from pydantic import BaseModel, EmailStr
 
@@ -25,20 +24,3 @@ class CompanyUpdate(StrictModel):
     email: EmailStr | None = None
     phone: Phone | None = None
     website: ShortText | None = None
-
-
-class PlanResponse(BaseModel):
-    name: str
-    user_limit: int | None  # None = unlimited
-    lead_limit: int | None
-
-
-class SubscriptionResponse(BaseModel):
-    plan: PlanResponse
-    status: str
-    users_used: int
-    leads_used: int
-
-
-class SubscriptionUpdate(StrictModel):
-    plan: Literal["FREE", "STARTER", "PRO", "ENTERPRISE"]
