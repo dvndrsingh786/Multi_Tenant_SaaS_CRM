@@ -1,28 +1,25 @@
+"""Quick check that the app can connect to MySQL.
+
+Usage:  python check_database.py
+"""
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-from database import create_database_engine
+from app.database import get_engine
 
 
 def main():
-    # Prepare the connection using our .env settings.
     try:
-        engine = create_database_engine()
+        engine = get_engine()
     except ValueError as error:
-        raise SystemExit(f"Configuration error: {error}") from None
+        raise SystemExit(f"Configuration error: {error}")
 
     try:
-        # Open a connection, run a simple SQL query, then close the connection.
-        with engine.connect() as connection:
-            connection.execute(text("SELECT 1"))
+        with engine.connect() as db:
+            db.execute(text("SELECT 1"))
         print("MySQL connection successful.")
     except SQLAlchemyError:
-        raise SystemExit(
-            "Cannot connect to MySQL. Check the service, database name, credentials and permissions."
-        ) from None
-    finally:
-        # Release any connections kept by this short-lived script.
-        engine.dispose()
+        raise SystemExit("Cannot connect to MySQL. Check that it is running and check your .env settings.")
 
 
 if __name__ == "__main__":
