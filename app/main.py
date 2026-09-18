@@ -1,6 +1,21 @@
+import logging
+
 from fastapi import FastAPI
 
-app = FastAPI(title="Multi-Tenant SaaS CRM API", version="1.0.0")
+from app.errors import add_error_handlers
+from app.routers import auth
+
+logging.basicConfig(level=logging.INFO)
+
+app = FastAPI(
+    title="Multi-Tenant SaaS CRM API",
+    version="1.0.0",
+    description="A CRM where many companies share one system, but each company only sees its own data.",
+)
+
+add_error_handlers(app)
+
+app.include_router(auth.router)
 
 
 @app.get("/api/v1/health", tags=["Health"])
