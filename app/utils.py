@@ -1,0 +1,64 @@
+"""Small helpers used by many routers."""
+import math
+
+from sqlalchemy import text
+
+
+def paginate(db, select_sql, count_sql, params, page, per_page):
+    """Run a list query one page at a time.
+
+    select_sql: the SELECT ... WHERE ... ORDER BY ... part (without LIMIT)
+    count_sql:  a SELECT COUNT(*) with the same WHERE, to know the total number of rows
+    """
+    total = db.execute(text(count_sql), params).scalar()
+
+    # LIMIT = how many rows, OFFSET = how many rows to skip.
+    # Page 1 skips 0 rows, page 2 skips per_page rows, and so on.
+    page_params = dict(params)
+    page_params["limit"] = per_page
+    page_params["offset"] = (page - 1) * per_page
+    rows = db.execute(text(select_sql + " LIMIT :limit OFFSET :offset"), page_params).mappings().all()
+
+    return {
+        "data": rows,
+        "meta": {
+            "page": page,
+            "per_page": per_page,
+            "total": total,
+            "total_pages": math.ceil(total / per_page),
+        },
+    }
+
+
+def update_row(db, table, row_id, company_id, changes):
+    """UPDATE one row with the given changes, only inside the user's company.
+
+    It builds:  UPDATE leads SET status = :status, phone = :phone
+                WHERE id = :id AND company_id = :company_id
+
+    The column names come from our Pydantic models (extra fields are rejected),
+    so the client can never choose which columns get updated. The values are
+    sent separately as parameters, which protects against SQL injection.
+    """
+    if not changes:
+        return
+
+    set_parts = [f"{column} = :{column}" for column in changes]
+    params = dict(changes)
+    params["id"] = row_id
+    params["company_id"] = company_id
+
+    db.execute(
+        text(f"UPDATE {table} SET {', '.join(set_parts)} WHERE id = :id AND company_id = :company_id"),
+        params,
+    )
+
+
+def like_pattern(search):
+    """Turn a search word into a LIKE pattern: john -> %john%
+
+    % and _ are special characters in LIKE, so we escape them first.
+    Otherwise searching for "%" would match everything.
+    """
+    search = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return f"%{search}%"

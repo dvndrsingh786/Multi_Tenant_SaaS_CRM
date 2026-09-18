@@ -12,6 +12,7 @@ from sqlalchemy import create_engine, text
 
 from app.database import get_engine
 from app.main import app
+from helpers import create_company_with_team
 from migrate import run_migrations
 
 # Tables that keep their rows between tests (plans are fixed data from a migration).
@@ -57,3 +58,14 @@ def client(test_engine):
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+# Two separate companies. Many tests use "globex" to try to reach "acme" data.
+@pytest.fixture
+def acme(client):
+    return create_company_with_team(client, "Acme Ltd", "acme.com")
+
+
+@pytest.fixture
+def globex(client):
+    return create_company_with_team(client, "Globex Corp", "globex.com")

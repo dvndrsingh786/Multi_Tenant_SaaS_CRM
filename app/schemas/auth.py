@@ -1,24 +1,15 @@
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field
 
-from app.schemas.common import ShortText, StrictModel
+from app.schemas.common import Password, ShortText, StrictModel
 
 
 class RegisterRequest(StrictModel):
     company_name: ShortText
     name: ShortText
     email: EmailStr
-    password: str = Field(min_length=8, max_length=128)
-
-    @field_validator("password")
-    @classmethod
-    def password_must_be_strong(cls, password):
-        has_letter = any(character.isalpha() for character in password)
-        has_number = any(character.isdigit() for character in password)
-        if not (has_letter and has_number):
-            raise ValueError("Password must contain at least one letter and one number.")
-        return password
+    password: Password
 
 
 class LoginRequest(StrictModel):

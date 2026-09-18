@@ -2,7 +2,7 @@
 from decimal import Decimal
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints
 
 
 class StrictModel(BaseModel):
@@ -17,6 +17,18 @@ ShortText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1
 Phone = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=30)]
 LongText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=10000)]
 Money = Annotated[Decimal, Field(ge=0, max_digits=15, decimal_places=2)]
+
+
+def check_password_strength(password):
+    has_letter = any(character.isalpha() for character in password)
+    has_number = any(character.isdigit() for character in password)
+    if not (has_letter and has_number):
+        raise ValueError("Password must contain at least one letter and one number.")
+    return password
+
+
+# 8 to 128 characters, with at least one letter and one number.
+Password = Annotated[str, Field(min_length=8, max_length=128), AfterValidator(check_password_strength)]
 
 
 class PageInfo(BaseModel):
