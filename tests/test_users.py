@@ -23,6 +23,12 @@ def test_manager_cannot_create_a_user(client, acme):
     assert response.status_code == 403
 
 
+def test_role_is_checked_before_the_request_body(client, acme):
+    # A manager sending a broken body still gets 403, not 422.
+    response = client.post(USERS_URL, headers=acme["manager"]["headers"], json={"nonsense": True})
+    assert response.status_code == 403
+
+
 def test_sales_agent_cannot_list_users(client, acme):
     assert client.get(USERS_URL, headers=acme["agent1"]["headers"]).status_code == 403
 

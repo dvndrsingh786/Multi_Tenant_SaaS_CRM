@@ -8,9 +8,38 @@ import logging
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 
 logger = logging.getLogger("crm")
+
+
+# ---------- What errors look like (used in the API documentation) ----------
+
+class ErrorResponse(BaseModel):
+    detail: str
+
+
+class FieldError(BaseModel):
+    field: str
+    message: str
+
+
+class ValidationErrorResponse(BaseModel):
+    detail: str
+    errors: list[FieldError]
+
+
+# Added to every router in main.py, so /docs shows the possible errors for each endpoint.
+ERROR_RESPONSES = {
+    401: {"model": ErrorResponse, "description": "Not logged in, or the token is invalid/expired"},
+    403: {"model": ErrorResponse, "description": "Your role is not allowed to do this, or a plan limit was reached"},
+    404: {"model": ErrorResponse, "description": "Not found (also used for records of other companies)"},
+    409: {"model": ErrorResponse, "description": "Conflict, e.g. duplicate email or lead already converted"},
+    422: {"model": ValidationErrorResponse, "description": "Invalid input, with one message per field"},
+    429: {"model": ErrorResponse, "description": "Too many requests (rate limit)"},
+    500: {"model": ErrorResponse, "description": "Unexpected server error (no internal details are shown)"},
+}
 
 
 def add_error_handlers(app):
